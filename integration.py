@@ -1,3 +1,5 @@
+import random
+
 def trapezoid(f, a, b, n):
     """Estimate the area under f from a to b using n trapezoids."""
     h = (b-a) / n
@@ -19,3 +21,13 @@ def simpson(f, a, b, n):
         right = a + (k+2) * h
         total = total + f(left) + 4 * f(middle) + f(right)
     return h / 3 * total
+
+
+def monte_carlo(f, a, b, n):
+    """Estimate the area under f from a to b averaging f at n random points."""
+    total = 0
+    for i in range(n):
+        x = random.uniform(a, b)
+        total = total + f(x)
+    average = total / n
+    return average * (b -a)
