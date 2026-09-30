@@ -31,3 +31,13 @@ def monte_carlo(f, a, b, n):
         total = total + f(x)
     average = total / n
     return average * (b -a)
+
+
+def monte_carlo_nd(f, d, n):
+    total = 0
+    for i in range(n):
+        point = []
+        for j in range(d):
+            point.append(random.uniform(0, 1))
+        total += f(point)
+    return total / n
