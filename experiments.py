@@ -10,21 +10,23 @@ def counted_exponential(x):
     calls = calls + 1
     return math.exp(x)
 
-
-calls = 0
-estimate = trapezoid(counted_exponential, 0, 1, 4)
-error = abs(estimate - exact) / exact
-print(f"trapezoid calls={calls} estimate={estimate:.6f} error={error:.2e}")
-
-
-calls = 0
-estimate = simpson(counted_exponential, 0, 1, 4)
-error = abs(estimate - exact) / exact
-print(f"simpson calls={calls} estimate={estimate:.6f} error={error:.2e}")
+for n in [4, 8, 16, 32, 64, 128]:
+    calls = 0
+    estimate = trapezoid(counted_exponential, 0, 1, n)
+    error = abs(estimate - exact) / exact
+    print(f"trapezoid calls={calls} estimate={estimate:.6f} error={error:.2e}")
 
 
-calls = 0
-random.seed(0)
-estimate = monte_carlo(counted_exponential, 0, 1, 4)
-error = abs(estimate - exact) / exact
-print(f"monte carlo calls={calls} estimate={estimate:.6f} error={error:.2e}")
+for n in [4, 8, 16, 32, 64, 128]:
+    calls = 0
+    estimate = simpson(counted_exponential, 0, 1, n)
+    error = abs(estimate - exact) / exact
+    print(f"simpson calls={calls} estimate={estimate:.6f} error={error:.2e}")
+
+
+for n in [4, 8, 16, 32, 64, 128]:
+    calls = 0
+    random.seed(0)
+    estimate = monte_carlo(counted_exponential, 0, 1, n)
+    error = abs(estimate - exact) / exact
+    print(f"monte carlo calls={calls} estimate={estimate:.6f} error={error:.2e}")
