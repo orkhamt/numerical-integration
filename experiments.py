@@ -33,16 +33,25 @@ for n in [4, 8, 16, 32, 64, 128]:
     simp_calls.append(calls)
     simp_errors.append(error)
 
+
+mc_calls = []
+mc_errors = []
 for n in [4, 8, 16, 32, 64, 128]:
-    calls = 0
-    random.seed(0)
-    estimate = monte_carlo(counted_exponential, 0, 1, n)
-    error = abs(estimate - exact) / exact
-    print(f"monte carlo calls={calls} estimate={estimate:.6f} error={error:.2e}")
+    total_error = 0
+    for seed in range(100):
+       calls = 0
+       random.seed(seed)
+       estimate = monte_carlo(counted_exponential, 0, 1, n)
+       total_error = total_error + abs(estimate - exact) / exact
+    average_error = total_error / 100
+    print(f"monte carlo calls={calls} average error={average_error:.2e}")
+    mc_calls.append(calls)
+    mc_errors.append(average_error)
 
 
 plt.loglog(trap_calls, trap_errors, "o-", label="trapezoid")
 plt.loglog(simp_calls, simp_errors, "o-", label="simpson")
+plt.loglog(mc_calls, mc_errors, "o-", label="monte carlo")
 plt.xlabel("calls to f")
 plt.ylabel("relative error")
 plt.legend()
