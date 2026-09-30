@@ -11,13 +11,15 @@ def trapezoid(f, a, b, n):
 
 def simpson(f, a, b, n):
     """Estimate the area under f from a to b using Simpson's rule. n must be even."""
+    if n % 2 != 0:
+        raise ValueError("n must be even")
     h = (b - a) / n
-    total = 0
-    for k in range(0, n, 2):
-        left = a + k * h
-        middle = a + (k+1) * h
-        right = a + (k+2) * h
-        total = total + f(left) + 4 * f(middle) + f(right)
+    total = f(a) + f(b)
+    for k in range(1, n):
+        if k % 2 == 1:
+            total = total + 4 * f(a + k * h)
+        else:
+            total = total + 2 * f(a + k * h)
     return h / 3 * total
 
 
