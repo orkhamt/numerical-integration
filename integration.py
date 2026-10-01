@@ -41,3 +41,20 @@ def monte_carlo_nd(f, d, n):
             point.append(random.uniform(0, 1))
         total += f(point)
     return total / n
+
+
+def trapezoid_2d(f, n):
+    """Estimate the volume under f over the unit square (0 to 1 in each direction) using an n by n grid of trapezoids."""
+    h = 1 / n
+    total = 0
+    for i in range(n + 1):
+        for j in range (n + 1):
+            weight = 1
+            if i == 0 or i == n:
+                weight = weight * 0.5
+            if j == 0 or j == n:
+                weight = weight * 0.5
+            total = total + weight * f([i * h, j * h])
+    return h * h * total
+
+
