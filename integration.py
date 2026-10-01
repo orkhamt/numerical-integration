@@ -48,7 +48,7 @@ def trapezoid_2d(f, n):
     h = 1 / n
     total = 0
     for i in range(n + 1):
-        for j in range (n + 1):
+        for j in range(n + 1):
             weight = 1
             if i == 0 or i == n:
                 weight = weight * 0.5
