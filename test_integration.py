@@ -1,7 +1,7 @@
 import pytest
 import random
 import math
-from integration import trapezoid, simpson, monte_carlo
+from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd
 
 def square(x):
     return x ** 2
@@ -38,4 +38,12 @@ def test_monte_carlo_exponential():
     result = monte_carlo(exponential, 0, 1, 1000)
     assert result == pytest.approx(math.e-1, rel=1e-2)
 
-    
+
+def exponential_nd(point):
+    return math.exp(sum(point))
+
+def test_monte_carlo_nd():
+    random.seed(0)
+    estimate = monte_carlo_nd(exponential_nd, 2, 100_000)
+    result = (math.e - 1) ** 2
+    assert estimate == pytest.approx(result, rel=1e-2)
