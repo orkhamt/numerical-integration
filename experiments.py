@@ -1,10 +1,10 @@
 import math
 import random
 import matplotlib.pyplot as plt
-from integration import trapezoid, simpson, monte_carlo
+from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd, trapezoid_2d, simpson_2d
 
 exact = math.e - 1
-calls = 0 
+calls = 0
 
 def counted_exponential(x):
     global calls
@@ -39,10 +39,10 @@ mc_errors = []
 for n in [4, 8, 16, 32, 64, 128]:
     total_error = 0
     for seed in range(100):
-       calls = 0
-       random.seed(seed)
-       estimate = monte_carlo(counted_exponential, 0, 1, n)
-       total_error = total_error + abs(estimate - exact) / exact
+        calls = 0
+        random.seed(seed)
+        estimate = monte_carlo(counted_exponential, 0, 1, n)
+        total_error = total_error + abs(estimate - exact) / exact
     average_error = total_error / 100
     print(f"monte carlo calls={calls} average error={average_error:.2e}")
     mc_calls.append(calls)
@@ -56,3 +56,59 @@ plt.xlabel("calls to f")
 plt.ylabel("relative error")
 plt.legend()
 plt.savefig("error_vs_calls.png")
+
+
+def counted_exponential_nd(point):
+    global calls
+    calls = calls + 1
+    return math.exp(sum(point))
+
+exact_2d = (math.e - 1) ** 2
+
+
+trap_2d_calls = []
+trap_2d_errors = []
+for n in [4, 8, 16, 32, 64, 128]:
+    calls = 0
+    estimate = trapezoid_2d(counted_exponential_nd, n)
+    error = abs(estimate - exact_2d) / exact_2d
+    print(f"trapezoid 2d calls={calls} estimate={estimate:.6f} error={error:.2e}")
+    trap_2d_calls.append(calls)
+    trap_2d_errors.append(error)
+
+
+simp_2d_calls = []
+simp_2d_errors = []
+for n in [4, 8, 16, 32, 64, 128]:
+    calls = 0
+    estimate = simpson_2d(counted_exponential_nd, n)
+    error = abs(estimate - exact_2d) / exact_2d
+    print(f"simpson 2d calls={calls} estimate={estimate:.6f} error={error:.2e}")
+    simp_2d_calls.append(calls)
+    simp_2d_errors.append(error)
+
+
+mc_2d_calls = []
+mc_2d_errors = []
+# n chosen so Monte Carlo makes about as many calls as the grids, which make (n + 1)^2
+for n in [16, 64, 256, 1024, 4096, 16384]:
+    total_error = 0
+    for seed in range(100):
+        calls = 0
+        random.seed(seed)
+        estimate = monte_carlo_nd(counted_exponential_nd, 2, n)
+        total_error = total_error + abs(estimate - exact_2d) / exact_2d
+    average_error = total_error / 100
+    print(f"monte carlo 2d calls={calls} average error={average_error:.2e}")
+    mc_2d_calls.append(calls)
+    mc_2d_errors.append(average_error)
+
+
+plt.figure()
+plt.loglog(trap_2d_calls, trap_2d_errors, "o-", label="trapezoid 2d")
+plt.loglog(simp_2d_calls, simp_2d_errors, "o-", label="simpson 2d")
+plt.loglog(mc_2d_calls, mc_2d_errors, "o-", label="monte carlo 2d")
+plt.xlabel("calls to f")
+plt.ylabel("relative error")
+plt.legend()
+plt.savefig("error_vs_calls_2d.png")
