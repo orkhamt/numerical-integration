@@ -1,4 +1,5 @@
 import random
+import itertools
 
 def trapezoid(f, a, b, n):
     """Estimate the area under f from a to b using n trapezoids."""
@@ -82,3 +83,17 @@ def simpson_2d(f, n):
             total = total + weight_i * weight_j * f([i * h, j * h])
     return (h/3) * (h/3) * total
             
+
+def trapezoid_nd(f, d, n):
+    """Estimate the volume under f over the unit cube (0 to 1 in each of d directions) using an n by n by ... grid of trapezoids."""
+    h = 1 / n
+    total = 0
+    for labels in itertools.product(range(n + 1), repeat=d):
+        weight = 1
+        point = []
+        for k in labels:
+            if k == 0 or k == n:
+                weight = weight * 0.5
+            point.append(k * h)
+        total = total + weight * f(point)
+    return h ** d * total
