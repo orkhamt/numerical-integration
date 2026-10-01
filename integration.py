@@ -34,6 +34,7 @@ def monte_carlo(f, a, b, n):
 
 
 def monte_carlo_nd(f, d, n):
+    """Estimate the volume under f over the unit cube (0 to 1 in eahc direction) by averaging f at n random points."""
     total = 0
     for i in range(n):
         point = []
@@ -58,3 +59,26 @@ def trapezoid_2d(f, n):
     return h * h * total
 
 
+def simpson_2d(f, n):
+    """Estimate the volume under f over the unit square (0 to 1 each direction) using Simpson's rule on an n by n grid. n must be even."""
+    if n % 2 != 0:
+        raise ValueError("n must be even")
+    h = 1 / n
+    total = 0
+    for i in range(n + 1):
+        for j in range(n + 1):
+            if i == 0 or i == n:
+                weight_i = 1
+            elif i % 2 == 1:
+                weight_i = 4
+            else:
+                weight_i = 2
+            if j == 0 or j == n:
+                weight_j = 1
+            elif j % 2 == 1:
+                weight_j = 4
+            else:
+                weight_j = 2
+            total = total + weight_i * weight_j * f([i * h, j * h])
+    return (h/3) * (h/3) * total
+            

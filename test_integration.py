@@ -1,7 +1,7 @@
 import pytest
 import random
 import math
-from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd, trapezoid_2d
+from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd, trapezoid_2d, simpson_2d
 
 
 def square(x):
@@ -49,5 +49,10 @@ def test_monte_carlo_nd():
 
 def test_trapezoid_2d():
     estimate = trapezoid_2d(exponential_nd, 100)
+    exact = (math.e - 1) ** 2
+    assert estimate == pytest.approx(exact, rel=1e-3)
+
+def test_simpson_2d():
+    estimate = simpson_2d(exponential_nd, 100)
     exact = (math.e - 1) ** 2
     assert estimate == pytest.approx(exact, rel=1e-3)
