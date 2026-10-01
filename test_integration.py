@@ -7,36 +7,36 @@ def square(x):
     return x ** 2
 
 def test_trapezoid_square_on_1_to_3():
-    result = trapezoid(square, 1, 3, 1000)
-    assert result == pytest.approx(26/3, rel=1e-3)
+    estimate = trapezoid(square, 1, 3, 1000)
+    assert estimate == pytest.approx(26/3, rel=1e-3)
 
 
 def test_simpson_square_on_1_to_3():
-    result = simpson(square, 1, 3, 1000)
-    assert result == pytest.approx(26/3, rel=1e-3)
+    estimate = simpson(square, 1, 3, 1000)
+    assert estimate == pytest.approx(26/3, rel=1e-3)
 
 
 def test_monte_carlo_square_on_1_to_3():
     random.seed(0)
-    result = monte_carlo(square, 1, 3, 100_000)
-    assert result == pytest.approx(26/3, rel=1e-2)
+    estimate = monte_carlo(square, 1, 3, 100_000)
+    assert estimate == pytest.approx(26/3, rel=1e-2)
 
 
 def exponential(x):
     return math.exp(x)
 
 def test_trapezoid_exponential():
-    result = trapezoid(exponential, 0, 1, 1000)
-    assert result == pytest.approx(math.e - 1, rel=1e-3)
+    estimate = trapezoid(exponential, 0, 1, 1000)
+    assert estimate == pytest.approx(math.e - 1, rel=1e-3)
 
 def test_simpson_exponential():
-    result = simpson(exponential, 0, 1, 1000)
-    assert result == pytest.approx(math.e-1, rel=1e-3)
+    estimate = simpson(exponential, 0, 1, 1000)
+    assert estimate == pytest.approx(math.e-1, rel=1e-3)
 
 def test_monte_carlo_exponential():
     random.seed(0)
-    result = monte_carlo(exponential, 0, 1, 1000)
-    assert result == pytest.approx(math.e-1, rel=1e-2)
+    estimate = monte_carlo(exponential, 0, 1, 1000)
+    assert estimate == pytest.approx(math.e-1, rel=1e-2)
 
 
 def exponential_nd(point):
@@ -45,5 +45,5 @@ def exponential_nd(point):
 def test_monte_carlo_nd():
     random.seed(0)
     estimate = monte_carlo_nd(exponential_nd, 2, 100_000)
-    result = (math.e - 1) ** 2
-    assert estimate == pytest.approx(result, rel=1e-2)
+    exact = (math.e - 1) ** 2
+    assert estimate == pytest.approx(exact, rel=1e-2)
