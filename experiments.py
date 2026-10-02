@@ -114,6 +114,8 @@ plt.legend()
 plt.savefig("error_vs_calls_2d.png")
 
 
+trap_all_calls = []
+trap_all_errors = []
 plt.figure()
 for d in [1, 2, 3, 4]:
     exact_nd = (math.e - 1) ** d
@@ -127,12 +129,16 @@ for d in [1, 2, 3, 4]:
         trap_nd_calls.append(calls)
         trap_nd_errors.append(error)
     plt.loglog(trap_nd_calls, trap_nd_errors, "o-", label=f"trapezoid {d}d")
+    trap_all_calls.append(trap_nd_calls)
+    trap_all_errors.append(trap_nd_errors)
 plt.xlabel("calls to f")
 plt.ylabel("relative error")
 plt.legend()
 plt.savefig("trapezoid_by_dimension.png")
 
 
+simp_all_calls = []
+simp_all_errors = []
 plt.figure()
 for d in [1, 2, 3, 4]:
     exact_nd = (math.e - 1) ** d
@@ -146,12 +152,16 @@ for d in [1, 2, 3, 4]:
         simp_nd_calls.append(calls)
         simp_nd_errors.append(error)
     plt.loglog(simp_nd_calls, simp_nd_errors, "o-", label=f"simpson {d}d")
+    simp_all_calls.append(simp_nd_calls)
+    simp_all_errors.append(simp_nd_errors)
 plt.xlabel("calls to f")
 plt.ylabel("relative error")
 plt.legend()
 plt.savefig("simpson_by_dimension.png")
 
 
+mc_all_calls = []
+mc_all_errors = []
 plt.figure()
 for d in [1, 2, 3, 4]:
     exact_nd = (math.e - 1) ** d
@@ -171,7 +181,25 @@ for d in [1, 2, 3, 4]:
         mc_nd_calls.append(calls)
         mc_nd_errors.append(average_error)
     plt.loglog(mc_nd_calls, mc_nd_errors, "o-", label=f"monte carlo {d}d")
+    mc_all_calls.append(mc_nd_calls)
+    mc_all_errors.append(mc_nd_errors)
 plt.xlabel("calls to f")
 plt.ylabel("relative error")
 plt.legend()
 plt.savefig("monte_carlo_by_dimension.png")
+
+
+plt.figure(figsize=(10, 8))
+for d in [1, 2, 3, 4]:
+    # lists start at 0, so dimension d is at position d - 1
+    i = d - 1
+    plt.subplot(2, 2, d)
+    plt.loglog(trap_all_calls[i], trap_all_errors[i], "o-", label="trapezoid")
+    plt.loglog(simp_all_calls[i], simp_all_errors[i], "o-", label="simpson")
+    plt.loglog(mc_all_calls[i], mc_all_errors[i], "o-", label="monte carlo")
+    plt.title(f"{d}d")
+    plt.xlabel("calls to f")
+    plt.ylabel("relative error")
+    plt.legend()
+plt.tight_layout()
+plt.savefig("error_vs_calls_by_dimension.png")
