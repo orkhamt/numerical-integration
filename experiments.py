@@ -1,7 +1,7 @@
 import math
 import random
 import matplotlib.pyplot as plt
-from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd, trapezoid_2d, simpson_2d, trapezoid_nd, simpson_nd
+from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd, trapezoid_2d, simpson_2d, trapezoid_nd, simpson_nd, monte_carlo_antithetic_nd, monte_carlo_control_nd
 
 exact = math.e - 1
 calls = 0
@@ -254,3 +254,63 @@ for d in [6, 8]:
     plt.legend()
 plt.tight_layout()
 plt.savefig("error_vs_calls_high_dimension.png")
+
+
+def linear_nd(point):
+    return 1 + sum(point)
+
+
+plain_calls = []
+plain_errors = []
+for n in [16, 64, 256, 1024, 4096, 16384]:
+    total_error = 0
+    for seed in range(100):
+        calls = 0
+        random.seed(seed)
+        estimate = monte_carlo_nd(counted_exponential_nd, 2, n)
+        total_error = total_error + abs(estimate - exact_2d) / exact_2d
+    average_error = total_error / 100
+    print(f"plain monte carlo 2d calls={calls} average error={average_error:.2e}")
+    plain_calls.append(calls)
+    plain_errors.append(average_error)
+
+
+anti_calls = []
+anti_errors = []
+for n in [16, 64, 256, 1024, 4096, 16384]:
+    total_error = 0
+    for seed in range(100):
+        calls = 0
+        random.seed(seed)
+        estimate = monte_carlo_antithetic_nd(counted_exponential_nd, 2, n)
+        total_error = total_error + abs(estimate - exact_2d) / exact_2d
+    average_error = total_error / 100
+    print(f"antithetic monte carlo 2d calls={calls} average error={average_error:.2e}")
+    anti_calls.append(calls)
+    anti_errors.append(average_error)
+
+
+control_calls = []
+control_errors = []
+# g is not counted, it is cheap. only calls to f count as effort
+for n in [16, 64, 256, 1024, 4096, 16384]:
+    total_error = 0
+    for seed in range(100):
+        calls = 0
+        random.seed(seed)
+        estimate = monte_carlo_control_nd(counted_exponential_nd, linear_nd, 1 + 2 / 2, 2, n)
+        total_error = total_error + abs(estimate - exact_2d) / exact_2d
+    average_error = total_error / 100
+    print(f"control variate monte carlo 2d calls={calls} average error={average_error:.2e}")
+    control_calls.append(calls)
+    control_errors.append(average_error)
+
+
+plt.figure()
+plt.loglog(plain_calls, plain_errors, "o-", label="plain")
+plt.loglog(anti_calls, anti_errors, "o-", label="antithetic")
+plt.loglog(control_calls, control_errors, "o-", label="control variate")
+plt.xlabel("calls to f")
+plt.ylabel("relative error")
+plt.legend()
+plt.savefig("error_vs_calls_monte_carlo_2d.png")
