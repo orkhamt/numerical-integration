@@ -150,3 +150,28 @@ plt.xlabel("calls to f")
 plt.ylabel("relative error")
 plt.legend()
 plt.savefig("simpson_by_dimension.png")
+
+
+plt.figure()
+for d in [1, 2, 3, 4]:
+    exact_nd = (math.e - 1) ** d
+    mc_nd_calls = []
+    mc_nd_errors = []
+    # grid_n is the grid size. Monte Carlo gets as many points as the grid makes calls.
+    for grid_n in [2, 4, 8, 16]:
+        n = (grid_n + 1) ** d
+        total_error = 0
+        for seed in range(100):
+            calls = 0
+            random.seed(seed)
+            estimate = monte_carlo_nd(counted_exponential_nd, d, n)
+            total_error = total_error + abs(estimate - exact_nd) / exact_nd
+        average_error = total_error / 100
+        print(f"monte carlo {d}d calls={calls} average error={average_error:.2e}")
+        mc_nd_calls.append(calls)
+        mc_nd_errors.append(average_error)
+    plt.loglog(mc_nd_calls, mc_nd_errors, "o-", label=f"monte carlo {d}d")
+plt.xlabel("calls to f")
+plt.ylabel("relative error")
+plt.legend()
+plt.savefig("monte_carlo_by_dimension.png")
