@@ -1,11 +1,12 @@
 import random
 import itertools
 
+
 def trapezoid(f, a, b, n):
     """Estimate the area under f from a to b using n trapezoids."""
-    h = (b-a) / n
+    h = (b - a) / n
     total = (f(a) + f(b)) / 2
-    for k in range(1,n):
+    for k in range(1, n):
         total = total + f(a + k * h)
     return h * total
 
@@ -31,17 +32,17 @@ def monte_carlo(f, a, b, n):
         x = random.uniform(a, b)
         total = total + f(x)
     average = total / n
-    return average * (b -a)
+    return average * (b - a)
 
 
 def monte_carlo_nd(f, d, n):
-    """Estimate the volume under f over the unit cube (0 to 1 in eahc direction) by averaging f at n random points."""
+    """Estimate the volume under f over the unit cube (0 to 1 in each direction) by averaging f at n random points."""
     total = 0
     for i in range(n):
         point = []
         for j in range(d):
             point.append(random.uniform(0, 1))
-        total += f(point)
+        total = total + f(point)
     return total / n
 
 
@@ -81,8 +82,8 @@ def simpson_2d(f, n):
             else:
                 weight_j = 2
             total = total + weight_i * weight_j * f([i * h, j * h])
-    return (h/3) * (h/3) * total
-            
+    return (h / 3) * (h / 3) * total
+
 
 def trapezoid_nd(f, d, n):
     """Estimate the volume under f over the unit cube (0 to 1 in each of d directions) using an n by n by ... grid of trapezoids."""
