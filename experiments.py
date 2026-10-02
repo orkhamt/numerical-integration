@@ -203,3 +203,54 @@ for d in [1, 2, 3, 4]:
     plt.legend()
 plt.tight_layout()
 plt.savefig("error_vs_calls_by_dimension.png")
+
+
+plt.figure(figsize=(10, 4))
+panel = 0
+for d in [6, 8]:
+    panel = panel + 1
+    exact_nd = (math.e - 1) ** d
+    trap_nd_calls = []
+    trap_nd_errors = []
+    simp_nd_calls = []
+    simp_nd_errors = []
+    mc_nd_calls = []
+    mc_nd_errors = []
+    # only small grids, bigger ones take too long in 6d and 8d
+    for grid_n in [2, 4]:
+        calls = 0
+        estimate = trapezoid_nd(counted_exponential_nd, d, grid_n)
+        error = abs(estimate - exact_nd) / exact_nd
+        print(f"trapezoid {d}d calls={calls} estimate={estimate:.6f} error={error:.2e}")
+        trap_nd_calls.append(calls)
+        trap_nd_errors.append(error)
+
+        calls = 0
+        estimate = simpson_nd(counted_exponential_nd, d, grid_n)
+        error = abs(estimate - exact_nd) / exact_nd
+        print(f"simpson {d}d calls={calls} estimate={estimate:.6f} error={error:.2e}")
+        simp_nd_calls.append(calls)
+        simp_nd_errors.append(error)
+
+        n = (grid_n + 1) ** d
+        total_error = 0
+        # 10 runs instead of 100, or this takes too long
+        for seed in range(10):
+            calls = 0
+            random.seed(seed)
+            estimate = monte_carlo_nd(counted_exponential_nd, d, n)
+            total_error = total_error + abs(estimate - exact_nd) / exact_nd
+        average_error = total_error / 10
+        print(f"monte carlo {d}d calls={calls} average error={average_error:.2e}")
+        mc_nd_calls.append(calls)
+        mc_nd_errors.append(average_error)
+    plt.subplot(1, 2, panel)
+    plt.loglog(trap_nd_calls, trap_nd_errors, "o-", label="trapezoid")
+    plt.loglog(simp_nd_calls, simp_nd_errors, "o-", label="simpson")
+    plt.loglog(mc_nd_calls, mc_nd_errors, "o-", label="monte carlo")
+    plt.title(f"{d}d")
+    plt.xlabel("calls to f")
+    plt.ylabel("relative error")
+    plt.legend()
+plt.tight_layout()
+plt.savefig("error_vs_calls_high_dimension.png")
