@@ -97,3 +97,24 @@ def trapezoid_nd(f, d, n):
             point.append(k * h)
         total = total + weight * f(point)
     return h ** d * total
+
+
+def simpson_nd(f, d, n):
+    """Estimate the volume under f over the unit cube (0 to 1 in each of d directions) using Simpson's rule on an n by n by ... grid. n must be even."""
+    if n % 2 != 0:
+        raise ValueError("n must be even")
+    h = 1 / n
+    total = 0
+    for labels in itertools.product(range(n + 1), repeat=d):
+        weight = 1
+        point = []
+        for k in labels:
+            if k == 0 or k == n:
+                weight = weight * 1
+            elif k % 2 == 1:
+                weight = weight * 4
+            else:
+                weight = weight * 2
+            point.append(k * h)
+        total = total + weight * f(point)
+    return (h / 3) ** d * total
