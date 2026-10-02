@@ -119,3 +119,18 @@ def simpson_nd(f, d, n):
             point.append(k * h)
         total = total + weight * f(point)
     return (h / 3) ** d * total
+
+def monte_carlo_antithetic_nd(f, d, n):
+    """Estimate the volume under f over the unit cube (0 to 1 in each d directions) by averaging f at n / 2 random points and their mirror points. n must be even."""
+    if n % 2 != 0:
+        raise ValueError("n must be even")
+    total = 0
+    for i in range(n // 2):
+        point = []
+        mirror = []
+        for j in range(d):
+            x = random.uniform(0, 1)
+            point.append(x)
+            mirror.append(1 - x)
+        total = total + f(point) + f(mirror)
+    return total / n
