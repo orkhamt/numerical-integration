@@ -1,7 +1,7 @@
 import math
 import random
 import matplotlib.pyplot as plt
-from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd, trapezoid_2d, simpson_2d
+from integration import trapezoid, simpson, monte_carlo, monte_carlo_nd, trapezoid_2d, simpson_2d, trapezoid_nd
 
 exact = math.e - 1
 calls = 0
@@ -112,3 +112,22 @@ plt.xlabel("calls to f")
 plt.ylabel("relative error")
 plt.legend()
 plt.savefig("error_vs_calls_2d.png")
+
+
+plt.figure()
+for d in [1, 2, 3, 4]:
+    exact_nd = (math.e - 1) ** d
+    trap_nd_calls = []
+    trap_nd_errors = []
+    for n in [2, 4, 8, 16]:
+        calls = 0
+        estimate = trapezoid_nd(counted_exponential_nd, d, n)
+        error = abs(estimate - exact_nd) / exact_nd
+        print(f"trapezoid {d}d calls={calls} estimate={estimate:.6f} error={error:.2e}")
+        trap_nd_calls.append(calls)
+        trap_nd_errors.append(error)
+    plt.loglog(trap_nd_calls, trap_nd_errors, "o-", label=f"trapezoid {d}d")
+plt.xlabel("calls to f")
+plt.ylabel("relative error")
+plt.legend()
+plt.savefig("trapezoid_by_dimension.png")
