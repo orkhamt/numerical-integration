@@ -60,7 +60,7 @@ This one throws the grid away and uses a different way to estimate an area: area
 
 ## Testing before anything else
 
-The first thing I wrote was a test, before any method existed. A test is a known right answer the code as to reach. The first one was the trapezoid rule on x^2 over [1, 3], which must give 26/3. 
+The first thing I wrote was a test, before any method existed. A test is a known right answer the code has to reach. The first one was the trapezoid rule on x^2 over [1, 3], which must give 26/3. 
 
 I picked [1, 3] on purpose. On [0, 1], two common bugs are invisible: forgetting the "a +" in a + k * h changes nothing because a = 0, and forgetting to multiply by b - a changes nothing because b - a = 1. On [1, 3] both bugs give a wrong answer and the test catches them.
 
@@ -93,3 +93,94 @@ Simpson's lid is a parabola, which already bends with the curve, so the gap left
 Monte Carlo has no pieces and no gaps, so this reasoning does not apply to it. Its error comes from which random points it happened to pick. In my results it needed 4 times the calls to halve the error, so doubling the calls only divided the error by about 1.4. Some random points land too high and some too low, and they partly cancel out, but slowly.
 
 So in 1D the grids win easily, and Simpson most of all.
+
+## 2D
+
+In 2D the area becomes a volume under a surface f(x1, x2). I work over the unit square, x1 and x2 both from 0 to 1.
+
+Monte Carlo barely changes: a random point is now two random numbers instead of one, and the rest is the same.
+
+The grids need posts in both directions, so an n by n grid has (n + 1)^2 posts. The trapezoid weights come from doing the 1D rule in each direction and multiplying. In each direction a post is either an end (weight 1/2) or inside (weight 1). A corner post is an end both ways, so 1/2 * 1/2 = 1/4. A post on an edge is an end one way and inside the other, so 1/2 * 1 = 1/2. A post in the middle gets 1 * 1 = 1. Simpson works the same way with its 1, 4, 2 weights.
+
+The test function is e^(x1 + x2). Since e^(x1 + x2) = e^x1 * e^x2, its volume over the square is (e - 1) * (e - 1) = (e - 1)^2. That is also what makes higher dimensions easy to test later.
+
+![Error vs calls in 2D](error_vs_calls_2d.png)
+
+This is where dimension starts to matter. Doubling n still cuts the trapezoid error by 4 and the Simpson error by 16, like in 1D. But doubling n doubles the posts in both directions, so it costs about 4 times the calls instead of 2. Monte Carlo doesn't care about dimension: 4 times the calls still halves its error.
+
+## Any dimension
+
+Next I made both grid methods work in any dimension d. The grid has (n + 1)^d posts. In 2D I visited them with two loops inside each other, one per direction, so d dimensions would need d loops. Writing 8 loops inside each other for 8 dimensions did not sound like that much fun, and the number of loops would have to change with d anyway. Python has something for exactly this: itertools.product(range(n + 1), repeat=d) lists every combination of post numbers, one per direction. For d = 2 and n = 2 that is (0, 0), (0, 1), (0, 2), (1, 0) and so on up to (2, 2), all 9 posts of the grid. The weight of a post is again the product of its 1D weights.
+
+The test function is e^(x1 + x2 + ... + xd) over the unit cube (every coordinate from 0 to 1), with exact answer (e - 1)^d. Staying on the unit cube is a choice I made on purpose: random points are easy to generate there, and the exact answer is known in every dimension. To keep the comparison fair, Monte Carlo always got as many points as the grid made calls.
+
+I plotted each method on its own for d = 1, 2, 3, 4, with n = 2, 4, 8, 16 pieces per direction, then all three side by side with one panel per dimension:
+
+![Error vs calls in dimension 1 to 4](error_vs_calls_by_dimension.png)
+
+Then 6 and 8 dimensions. The grids get expensive fast here, so I ran them with only n = 2 and 4 pieces per direction. In 8 dimensions a grid with 4 pieces per direction already has 5^8 = 390,625 posts. With 8 pieces per direction it would be 9^8, about 43 million calls for one estimate. Fair to say I didnt run that one. 
+
+![Error vs calls in 6 and 8 dimensions](error_vs_calls_high_dimension.png)
+
+Doubling n always gives the grids the same improvement (error /4 or /16), but the price goes up with dimension: on a big grid, about 2^d times the calls. Monte Carlo's deal never changes. Here is what one doubling of n costs on a big grid, and what Monte Carlo gets for the same number of calls:
+
+| Dimension | Calls for one doubling of n | Trapezoid error | Simpson error | Monte Carlo error |
+| --- | --- | --- | --- | --- |
+| 1 | x2 | /4 | /16 | /1.4 |
+| 2 | x4 | /4 | /16 | /2 |
+| 3 | x8 | /4 | /16 | /2.8 |
+| 4 | x16 | /4 | /16 | /4 |
+| 6 | x64 | /4 | /16 | /8 |
+| 8 | x256 | /4 | /16 | /16 |
+
+That table is for big grids. My 8 dimension grids were small: going from n = 2 to n = 4 took the posts from 3^8 to 5^8, which is about 60 times the calls, not 256. Doubling n doubles the pieces but not quite the posts: 2 pieces have 3 posts, 4 pieces have 5 posts, not 6. Only when n is big, like 100 pieces (101 posts) to 200 pieces (201 posts), do the posts nearly double too.
+
+In 4 dimensions (4D), the trapezoid and Monte Carlo lines cross, and in my 6 and 8 dimension plots the trapezoid line is above Monte Carlo. Simpson still has the lowest error all the way to 8 dimensions because it started far ahead, but its leads get smaller from 6 to 8 dimensions. I stopped at 8, but going by the table, Monte Carlo's improvement per doubling keeps growing with the dimension while the grids improvement stays the same, so it keeps catching up.
+
+So the answer depends on the dimension. in low dimensions a good grid gets a much lower error for the same number of calls. As the dimension goes up, the grid's cost explodes, and random sampling, which looked hopeless in 1D, catches up.
+
+## Making Monte Carlo better without more calls
+
+Monte Carlo's weak point is that it wobbles: run it twice and you get two different answers. In the last part of this project, I tested two standard tricks that try to reduce the wobble without using more calls to f.
+
+### Antithetic sampling
+
+For every random point, also use its mirror point, where each coordinate x becomes 1 - x. If the random point lands low, the mirror lands high, so their errors tend to cancel. Half the points are random and half are mirrors, so the number of calls stays the same.
+
+### Control variates
+
+Pick a simple function g that goes up and down roughly like f and whose exact area you already know. Then split the area: area of f = area of (f - g) + area of g. The second part is known exactly, so only f - g goes through Monte Carlo. If g is close to f, then f - g is small and flat and so wobbles less. I used g = 1 + x1 + ... + xd. Its exact area over the unit cube is 1 + d / 2, because each coordinate averages 1/2. I didn't count calls to g, since g is just an addition and costs almost nothing compared to f.
+
+I compared plain, antithetic and control variate Monte Carlo in 2D, again averaged over 100 seeds:
+
+![Plain vs antithetic vs control variate Monte Carlo in 2D](error_vs_calls_monte_carlo_2d.png)
+
+All three lines have the same slope, so neither trick changes the basic rule of 4 times the calls to halve the error. What changes is the level. Antithetic sampling ends up about 3 times below plain Monte Carlo, and control variates about 1.5 times below.
+
+Antithetic sampling works well here because e^(x1 + x2) only goes up, so a point and its mirror tend to land on opposite sides of the average. Control variates help less because 1 + x1 + x2 only roughly follows e^(x1 + x2). At the corner (1, 1) the function is e^2, about 7.4, while g is only 3, so f - g still wobbles a lot. A g closer to f would do better. How much either trick helps depends on the function.
+
+## Limits
+
+I only used one smooth family of test functions, e^(x1 + ... + xd), because its exact answer is known in every dimension. The methods could behave very differently on functions with a kink or an infinite slope, like sqrt(x) at 0, and I haven't tested those yet. Everything is on the unit cube. In 6 and 8 dimensions the grids only have two sizes and Monte Carlo is averaged over 10 seeds instead of 100 to keep the running time reasonable, so those results are rougher. The antithetic and control variate comparison is only in 2D, and it doesn't count calls to g.
+
+## How to run it
+
+    git clone <repo-url>
+    cd numerical-integration
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    pytest
+    python experiments.py
+
+pytest runs all 13 tests. experiments.py prints all the results and saves the plots. It takes a while, mostly because of the 6 and 8 dimension grids.
+
+## Files
+
+integration.py has every method: trapezoid and Simpson in 1D, 2D and any dimension, Monte Carlo in 1D and any dimension, plus antithetic and control variate Monte Carlo. 
+
+test_integration.py checks each method against integrals with known exact answers.
+
+experiments.py counts calls, measures relative error and makes all the plots.
+
+No library integration functions are used, just loops, the random module and itertools.
