@@ -165,7 +165,7 @@ I only used one smooth family of test functions, e^(x1 + ... + xd), because its 
 
 ## How to run it
 
-    git clone <repo-url>
+    git clone https://github.com/orkhamt/numerical-integration.git
     cd numerical-integration
     python3 -m venv .venv
     source .venv/bin/activate
