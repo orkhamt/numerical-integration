@@ -54,3 +54,42 @@ For example with n = 4 there are 5 posts, and their weights are 1, 4, 2, 4, 1. B
 
 If the function is itself a parabola, like x^2, the lid sits exactly on it and Simpson's rule gives the exact area. For any other curve, like e^x, each lid is only a close estimate, and the small gap between the lid and the curve of the function is the error. 
 
+### Monte Carlo
+
+This one throws the grid away and uses a different way to estimate an area: area = average height * width. Pick n random x-values between a and b, look up f at each one, take the average, and multiply by b - a. 
+
+## Testing before anything else
+
+The first thing I wrote was a test, before any method existed. A test is a known right answer the code as to reach. The first one was the trapezoid rule on x^2 over [1, 3], which must give 26/3. 
+
+I picked [1, 3] on purpose. On [0, 1], two common bugs are invisible: forgetting the "a +" in a + k * h changes nothing because a = 0, and forgetting to multiply by b - a changes nothing because b - a = 1. On [1, 3] both bugs give a wrong answer and the test catches them.
+
+Then came Simpson and Monte Carlo with the same test. Simpson is exact on x^2 (a parabola), so that test only catches bugs. So I added tests on e^x over [0, 1]: it isn't a parabola, so every method leaves a real error, its exact answer is known (e - 1), and it extends to any dimension as e^(x1 + ... + xd), with exact answer (e - 1)^d. It is on [0, 1] because later everything is on the unit cube, and the [1, 3] test already catches the two hidden bugs. Monte Carlo is random, so its tests fix the random seed (the same "random" numbers every run) and allow 1% error, where the grid tests allow 0.1%.
+
+There are 13 tests in the end and they all pass.
+
+## Counting calls
+
+To measure effort I wrapped f in a small function that adds 1 to a counter everytime f is called, so every method could report exactly how many calls it made.
+
+The counter showed a problem straight away. My first trapezoid and Simpson code asked for some posts twice. In the trapezoid, every inside post was asked once as the right edge of one piece and once as the left edge of the next. In Simpson, the post where two pairs meet was asked once by each pair. Same answer, wasted calls. I rewrote both to ask each post once and use weights instead (1/2 and 1 for trapezoid, 1, 4, 2 for Simpson). The answer stayed the same and calls dropped to n + 1.
+
+I also switched to relative error at this point: abs(estimate - exact) / exact. That makes errors comparable between integrals of different sizes, which matters later because the exact answer grows with the dimension.
+
+## Results in 1D
+
+For each method, I ran n = 4, 8, 16, 32, 64, 128 and plotted error against calls on log-log axes. On a log-log plot a straight line means everytime you double the effort, the error shrinks by the same factor, so that factor is what to compare.
+
+Monte Carlo gives a different answer every run, so one run is partly luck. For each n I ran it with 100 different seeds and averaged the error, to get the typical error instead of a lucky or unlucky one.
+
+![Error vs calls in 1D](error_vs_calls.png)
+
+Doubling the calls cut the trapezoid error by 4, the Simpson error by 16, and the Monte Carlo error by only about 1.4. Monte Carlo needs 4 times the calls just to halve its error.
+
+Why these numbers? Doubling n splits every piece in two, so each gap between the lid and the curve is replaced by two new ones. For the trapezoid rule, each new gap is about 1/8 the size of the old one. It is half as wide, and because the curve has only half the distance to bend away from the trapezoid lid, it is about 1/4 as tall. Two gaps of 1/8 make 1/4 of the old error.
+
+Simpson's lid is a parabola, which already bends with the curve, so the gap leftover is smaller and shrinks faster: each new gap is about 1/32 of the old one, and two of them make 1/16.
+
+Monte Carlo has no pieces and no gaps, so this reasoning does not apply to it. Its error comes from which random points it happened to pick. In my results it needed 4 times the calls to halve the error, so doubling the calls only divided the error by about 1.4. Some random points land too high and some too low, and they partly cancel out, but slowly.
+
+So in 1D the grids win easily, and Simpson most of all.
