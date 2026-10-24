@@ -1,0 +1,22 @@
+name: tests
+
+# run every time code is pushed
+on: push
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: get the code
+        uses: actions/checkout@v5
+
+      - name: set up python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: install the project
+        run: pip install -r requirements.txt
+
+      - name: run the tests
+        run: pytest

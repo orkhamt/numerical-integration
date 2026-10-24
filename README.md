@@ -1,5 +1,7 @@
 # How wrong are the rectangles?
 
+[![tests](https://github.com/orkhamt/numerical-integration/actions/workflows/tests.yml/badge.svg)](https://github.com/orkhamt/numerical-integration/actions/workflows/tests.yml)
+
 The goal of this project is to compare three ways of computing an area under a curve (the trapezoid rule, Simpson's rule and Monte Carlo), find out which one gives the most accuracy for the least work, and see whether the winner changes as the problem goes from 1 dimension up to 8 dimensions.
 
 I tutor maths on the side, and this project started while I was going through the Fundamental Theorem of Calculus with a high school student. I don't like opening with "an integral is the area under the curve", because that skips the idea behind it.
